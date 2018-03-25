@@ -3,7 +3,7 @@ from math import floor
 
 import requests
 
-from bazaarvoice_api.product import Product
+
 
 
 class BazaarvoiceAPI:
@@ -13,28 +13,28 @@ class BazaarvoiceAPI:
     }
 
     api_key = None
-    searched_brand = None
+    productt_id = None
 
     reviews_list = []
 
-    def __init__(self, api_key, searched_brand):
+    def __init__(self, api_key, productt_id):
         self.api_key = api_key
-        self.searched_brand = searched_brand
+        self.productt_id = productt_id
 
-        if not isinstance(searched_brand, str):
-            raise Exception('You must provide string in searched_brand var, got: ' + str(type(searched_brand)))
+        if not isinstance(productt_id, str):
+            raise Exception('You must provide string in productt_id var, got: ' + str(type(productt_id)))
 
-        if 'http://' in searched_brand:
+        if 'http://' in productt_id:
             raise Exception('You cant provide url')
 
     def make_url(self):
-        searched_brand = self.searched_brand
+        productt_id = self.productt_id
         api_key = self.api_key
 
         base_url = 'https://api.bazaarvoice.com/data/'
 
-        start_url = base_url + "products.json?apiversion=5.4&passkey=" + api_key + \
-                    "&ExcludeFamily=true&limit=100&include=Categories&search=" + searched_brand + '&offset=0'
+        start_url = base_url + "reviews.json?apiversion=5.4&passkey=" + api_key + \
+                    "&Sort=Helpfulness%3Adesc&Limit=100&Include=Products%2CComments&Stats=Reviews&Filter=ProductId:" + productt_id + '&offset=0'
 
         return start_url
 
@@ -53,21 +53,16 @@ class BazaarvoiceAPI:
 
     def get_product(self):
         products_url = self.make_url()
+        print(products_url)
 
-        products = self._get_products(products_url)
-        for products_list in products:
-            for product_data in products_list:
-                product_obj = Product(product_data, products_url)
+        products = self._get_reviews(products_url)
+        for review_list in products:
+            for rev in review_list:
+                review_object = Review(rev)
 
-                review_list = []
-                for review_obj in product_obj.get_review():
-                        review_list.append(review_obj)
+                yield review_object
 
-                product_obj.__setattr__('reviews', review_list)
-
-                yield product_obj
-
-    def _get_products(self, products_url):
+    def _get_reviews(self, products_url):
         products_content = requests.get(products_url, headers=self.headers).text
         products_json = json.loads(products_content)
 
@@ -94,4 +89,9 @@ class BazaarvoiceAPI:
         new_reviews_url = product_url.replace(current_offset_str, new_offset_str)
 
         return new_reviews_url
+
+class Review(object):
+    def __init__(self, review_dict):
+        for k, v in review_dict.items():
+            self.__setattr__(k, v)
 
