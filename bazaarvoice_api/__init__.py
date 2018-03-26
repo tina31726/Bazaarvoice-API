@@ -1,5 +1,6 @@
 import json
 from math import floor
+from fake_useragent import UserAgent
 
 import requests
 
@@ -7,11 +8,7 @@ import requests
 
 
 class BazaarvoiceAPI:
-    headers = {
-        'user-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/51.0.2704.103 Safari/537.36'
-    }
-
+    ua = UserAgent()
     api_key = None
     productt_id = None
 
@@ -63,7 +60,7 @@ class BazaarvoiceAPI:
                 yield review_object
 
     def _get_reviews(self, products_url):
-        products_content = requests.get(products_url, headers=self.headers).text
+        products_content = requests.get(products_url, headers={'user-agent':str(ua.random)}).text
         products_json = json.loads(products_content)
 
         self._check_response(products_json)
@@ -76,7 +73,7 @@ class BazaarvoiceAPI:
 
             yield products_json['Results']
 
-            products_content = requests.get(products_url, headers=self.headers).text
+            products_content = requests.get(products_url, headers={'user-agent':str(ua.random)}).text
             products_json = json.loads(products_content)
 
     @staticmethod
