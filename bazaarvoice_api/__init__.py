@@ -1,3 +1,4 @@
+
 import json
 from math import floor
 from fake_useragent import UserAgent
@@ -8,7 +9,7 @@ import requests
 
 
 class BazaarvoiceAPI:
-    ua = UserAgent()
+
     api_key = None
     productt_id = None
 
@@ -60,6 +61,7 @@ class BazaarvoiceAPI:
                 yield review_object
 
     def _get_reviews(self, products_url):
+        ua = UserAgent()
         products_content = requests.get(products_url, headers={'user-agent':str(ua.random)}).text
         products_json = json.loads(products_content)
 
@@ -91,4 +93,3 @@ class Review(object):
     def __init__(self, review_dict):
         for k, v in review_dict.items():
             self.__setattr__(k, v)
-
